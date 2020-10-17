@@ -134,55 +134,19 @@ server <- function(input, output, session) {
       insert_id <- gsub(" ", "_", tolower(insert))
       insertUI("#select_columns_div",
                "afterEnd", 
-               ui = filter_moduleUI(insert_id, dt(), insert, insert))
+               ui = filter_moduleUI(insert_id, dt(), insert, insert, c("In", "Not in")))
     }
     rv$sel_col <- input$select_columns
   }, ignoreNULL = FALSE)
   
-  observe({
-    # map(sel_col, )
-    # filter_moduleServer("Country", dt(), "Country")
-  })
-  
-  
   dt_after <- reactive({
-    req(dt(), rv$sel_col)
+    # req(dt(), rv$sel_col)
     dt <- dt()
-    
-    # map(rv$sel_col, ~assign("dt", filter_moduleServer(.x, dt, .x), envir = parent.env(environment())))
-    # map(rv$sel_col, ~print(filter_moduleServer(.x, dt, .x)))
-    # filter_moduleServer(rv$sel_col, dt, rv$sel_col)
     map(rv$sel_col, function(d) {
-      dt <<- filter_moduleServer(d, dt, d)
+      d0 <- gsub(" ", "_", tolower(d))
+      dt <<- filter_moduleServer(d0, dt, d)
     })
     dt
-    # filter_moduleServer("Country", dt(), "Country")
-    # rv$dt
-  #   if (nzchar(input$sel0)) {
-  #     if (info$hd %in% c("Num", "Yea", "Dat")) {
-  #       if (input$log0 == "In") {
-  #         dt <- dt() %>%
-  #           dplyr::filter(input$num_filter[1] <= .data[[input$sel0]],
-  #                         input$num_filter[2] >= .data[[input$sel0]])
-  #       } else {
-  #         dt <- dt() %>%
-  #           dplyr::filter(input$num_filter[1] > .data[[input$sel0]] | input$num_filter[2] < .data[[input$sel0]])
-  #       }
-  #     } else {
-  #       req(input$cat_filter)
-  #       print(input$cat_filter)
-  #       if (nzchar(input$cat_filter)) {
-  #         if (input$log0 == "In") {
-  #           dt <- dt() %>%
-  #             dplyr::filter(.data[[input$sel0]] %in% input$cat_filter)
-  #         } else {
-  #           dt <- dt() %>%
-  #             dplyr::filter(!.data[[input$sel0]] %in% input$cat_filter)      
-  #         }
-  #       }
-  #     }
-  #   }
-  #   dt
   })
     
   

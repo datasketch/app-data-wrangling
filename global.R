@@ -45,8 +45,7 @@ filter_moduleServer <- function(id, data, col) {
           dplyr::filter(input$num_filter[1] > .data[[col]] | input$num_filter[2] < .data[[col]])
       }
     } else {
-      req(input$cat_filter)
-      if (nzchar(input$cat_filter)) {
+      if (!is.null(input$cat_filter)) {
         if (input$logical_relation == "in") {
           dt <- dt %>%
             dplyr::filter(.data[[col]] %in% input$cat_filter)
