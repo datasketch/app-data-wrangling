@@ -1,0 +1,74 @@
+upload_data: Upload data
+dataset: Dataset
+options: Options
+viz: Table
+sample: Sample data
+sample_lb: Select a sample data
+sample_ch_0: "data/sampleData/life_expectancy_100_y_en.csv"
+sample_ch_1: "data/sampleData/emisiones_c02_en.csv"
+sample_ch_nm_0: Life expectancy (Gapminder)
+sample_ch_nm_1: CO2 emissions per capita
+paste: Copy & paste
+paste_pl: Copy and paste it here
+upload: CSV/XLS upload  
+upload_lb: Choose CSV/XLS file
+upload_bt_lb: Browse...
+upload_pl: No file selected
+google: Google sheets
+google_sh_lb: Data from Google sheet
+google_sh_pl: https://docs.google.com/spreadsheets/...
+google_sh_pg_lb: Sheet
+text: Text
+borders: Borders
+size: Sizes
+sort_group_filter: Sort, group, filter
+pagination: Pagination
+font_family: Font family
+font_size: Font size
+color: Font color
+outlined: Table border
+bordered: Columns border
+borderless: Rows border
+striped: Stripes
+compact: Compactness
+highlight: Highlight row on hover
+height: Height
+width_sl: Width
+wrap: Text wrap
+resizable: Resizable columns
+sortable: Sortable
+show_sort_icon: Show sort icon
+group_by: Group by columns
+filterable: Filterable
+searchable: Searchable
+selection: Selectable
+show_pagination: Pagination
+show_page_info: Show page info
+page_size_control: Page size control
+page_size: Rows per page
+page_type: Pagination type
+download_table: Download table
+download: Download
+get_link: Get link
+gl_name: Name
+gl_slug: Slug
+gl_description: Description
+gl_license: License
+gl_tags: Tags
+gl_category: Category
+gl_save: Save in dslibrary
+gl_url: URL
+gl_iframe: Copy to embed
+gl_error: There has been a problem; try again later.
+numbers: Numbers
+simple: Simple
+jump: Jump
+width_le: Fixed width
+full_width: Full width
+info_gb: Group table by categories of chosen columns
+styles: Styles
+color_header: Headers background
+font_color_header: Headers text color
+hyperlink: URLs as hyperlinks
+info_hk: Cells that start with http, https or www will be hyperlinks to the website
+make_table_long: Columns (variables) into rows (observations)

@@ -1,0 +1,73 @@
+upload_data: Subir datos
+dataset: Datos
+options: Opciones
+viz: Tabla
+sample: Datos de muestra
+sample_lb: Selecciona datos de muestra
+sample_ch_0: "data/sampleData/life_expectancy_100_y_es.csv"
+sample_ch_1: "data/sampleData/emisiones_c02_es.csv"
+sample_ch_nm_0: Expectativa de vida (Gapminder)
+sample_ch_nm_1: Emisiones de CO2 per capita
+paste: Copiar y pegar
+paste_pl: Copia y pega aquí
+upload: Subir CSV/XLS
+upload_lb: Escoge archivo CSV/XLS
+upload_bt_lb: Examinar...
+upload_pl: Ningún archivo seleccionado
+google: Google sheets
+google_sh_lb: Datos desde Google sheet
+google_sh_pl: https://docs.google.com/spreadsheets/...
+google_sh_pg_lb: Hoja
+text: Texto
+borders: Bordes
+size: Tamaños
+sort_group_filter: Ordenar, agrupar, filtrar
+pagination:  Paginación
+font_family: Fuente texto
+font_size: Tamaño texto
+color: Color texto
+outlined: Borde tabla
+bordered: Borde columnas
+borderless: Borde filas
+striped: Líneas
+compact: Compacta
+highlight: Destacar con el mouse
+height: Alto
+width_sl: Ancho
+wrap: Salto de texto
+resizable: Columnas ajustables
+sortable: Agregar orden
+show_sort_icon: Mostrar ícono orden
+group_by: Agrupar por columnas
+filterable: Agregar filtro
+searchable: Agregar búsqueda
+selection: Seleccionable
+show_pagination: Paginación
+show_page_info: Mostrar información de página
+page_size_control: Control filas por página
+page_size: Número de filas por página
+page_type: Tipo de paginación
+download_table: Descargar tabla
+download: Descargar
+get_link: Obtener enlace
+gl_name: Nombre
+gl_slug: Slug
+gl_description: Descripción
+gl_license: Licencia
+gl_tags: Etiquetas
+gl_category: Categorías
+gl_save: Guardar en dslibrary
+gl_url: URL
+gl_iframe: Copiar para embeber
+gl_error: Ha habido un problema; inténtelo de nuevo en unos momentos.
+numbers: Números
+simple: Simple
+jump: Salto
+width_le: Ancho fijo
+full_width: Ancho completo
+info_gb: Agrupar tabla por las categorías de las columnas escogidas
+styles: Estilos
+color_header: Color fondo títulos
+font_color_header: Color texto títulos
+hyperlink: URLs como hipervínculos
+info_hk: Celdas que empiezen por http, https o www serán hipervínculos que lleven a la página web

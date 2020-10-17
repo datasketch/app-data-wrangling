@@ -1,0 +1,37 @@
+font_family:
+  show: true
+  input_type: selectizeInput
+  input_params:
+    label: font_family
+    choices:
+      - Liberation Sans Narrow
+      - Sawasdee
+      - Segoe UI
+    selected: Liberation Sans Narrow
+hyperlink:
+  show: true
+  input_type: checkboxInput
+  input_params:
+    label: hyperlink
+    value: true
+  input_info:
+    icon: info-circle
+    text: info_hk
+sortable:
+  show: true
+  input_type: checkboxInput
+  input_params:
+    label: sortable
+    value: true
+group_by:
+  show: true
+  input_type: selectizeInput
+  input_params:
+    label: group_by
+    choices: cols_nms()
+    selected: " "
+    multiple: true
+  update_param: selected
+  input_info:
+    icon: info-circle
+    text: info_gb
