@@ -1,0 +1,21 @@
+Country,Year,Life expectancy,Wikipedia,Date
+Afghanistan,1800,28.2,https://en.wikipedia.org/wiki/Afghanistan,2010-02-03
+Afghanistan,1900,29.4,,1993-11-23
+Afghanistan,2000,54.6,-,1879-05-08
+NA,2100,77.7,-,1904-10-17
+NA,1800,35.4,https://en.wikipedia.org/wiki/Albania,1967-01-31
+Albania,1900,35.4,,2019-04-21
+NA,2000,74.9,-,2000-12-03
+Albania,2100,88.3,-,1956-11-11
+Algeria,1800,28.8,https://en.wikipedia.org/wiki/Algeria,1893-03-24
+Algeria,1900,30.2,-,1978-09-21
+Algeria,2000,74,-,2010-02-03
+Algeria,2100,89.2,-,1993-11-23
+Andorra,1800,NA,https://en.wikipedia.org/wiki/Andorra,1879-05-08
+Andorra,1900,NA,-,1904-10-17
+Andorra,2000,81.2,-,1967-01-31
+Andorra,2100,NA,-,2019-04-21
+Angola,1800,27,https://en.wikipedia.org/wiki/Angola,2000-12-03
+Angola,1900,29,-,1956-11-11
+Angola,2000,51.7,-,1893-03-24
+Angola,2100,79.9,-,1978-09-21

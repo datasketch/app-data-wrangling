@@ -132,9 +132,11 @@ server <- function(input, output, session) {
     } else if (length(insert) > 0) {
       # insertUI("#select_columns + .selectize-control", "afterEnd", "filter_moduleUI(insert, dt(), insert, insert)")
       insert_id <- gsub(" ", "_", tolower(insert))
+      ch_lg <- c("In", "Not in")
+      ch_kp <- c("Keep NA's", "Keep empty cells")
       insertUI("#select_columns_div",
                "afterEnd", 
-               ui = filter_moduleUI(insert_id, dt(), insert, insert, c("In", "Not in")))
+               ui = filter_moduleUI(insert_id, dt(), insert, insert, ch_lg, ch_kp))
     }
     rv$sel_col <- input$select_columns
   }, ignoreNULL = FALSE)
