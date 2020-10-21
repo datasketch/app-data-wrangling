@@ -1,3 +1,13 @@
+filter_select:
+  show: true
+  input_type: selectizeInput
+  input_params:
+    label: filter_select
+    choices:
+      - Liberation Sans Narrow
+      - Sawasdee
+      - Segoe UI
+    selected: Liberation Sans Narrow
 font_family:
   show: true
   input_type: selectizeInput

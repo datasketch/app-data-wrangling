@@ -1,3 +1,7 @@
+filter:
+  label: filter
+  inputs:
+    - filter_select
 make_table_long:
   label: make_table_long
   inputs:

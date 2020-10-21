@@ -103,29 +103,42 @@ server <- function(input, output, session) {
     # updateRadioButtons(session, "full_width", choices = ch1, selected = input$full_width)
   })
   
+  # observe({
   dt <- reactive({
     req(input$hotr_input)
+    # rv$dt <- hotr_table(input$hotr_input)
+    # rv$dt_after <- hotr_table(input$hotr_input)
     hotr_table(input$hotr_input)
   })
   
-  cols_nms <- reactive({
-    req(dt())
-    names(dt())
-  })
   
-  
-  
-  rv <- reactiveValues(sel_col = NULL, dt = NULL)
+  rv <- reactiveValues(dt = NULL, dt_after = NULL,
+                       filter_sel_col = NULL, arrange_sel_col = NULL)
   
   output$controls <- renderUI({
-    div(id = "select_columns_div",
-        selectizeInput("select_columns", "Filter by column", choices = c("", cols_nms()), multiple = TRUE,  options = list("plugins" = list("remove_button"))))
+    div(
+      div(id = "filter_select_columns_div",
+          div(class = "style_section", "Filter"),
+          selectizeInput("filter_select_columns", "Columns", choices = c("", names(dt())), multiple = TRUE, options = list("plugins" = list("remove_button")))),
+      div(id = "select_select_columns_div",
+          div(class = "style_section", "Select columns"),
+          radioButtons("logical_columns_select", "Columns", choices = c("In" = "in", "Not in" = "not_in")),
+          selectizeInput("select_select_columns", "", choices = c("", names(dt())), multiple = TRUE, options = list("plugins" = list("remove_button"))),
+          # div(#style = "display: flex; justify-content: space-between;",
+          # div(style = "font-weight: 600; padding: 0 29px 0 0;", "Columns that:"),
+          radioButtons("logical_contains_select", "Columns names that:", choices = c("contain" = "in", "do not contain" = "not_in")),
+          textInput("contains_select_columns", "", placeholder = "Write text")),
+      div(id = "arrange_select_columns_div",
+          div(class = "style_section", "Arrange"),
+          selectizeInput("arrange_select_columns", "Columns", choices = c("", names(dt())), multiple = TRUE, options = list("plugins" = list("remove_button")))),
+    )
   })
   
-  observeEvent(input$select_columns, {
-    sel_col <- input$select_columns
-    remove <- setdiff(rv$sel_col, sel_col)
-    insert <- setdiff(sel_col, rv$sel_col)
+  # filter module server
+  observeEvent(input$filter_select_columns, {
+    sel_col <- input$filter_select_columns
+    remove <- setdiff(rv$filter_sel_col, sel_col)
+    insert <- setdiff(sel_col, rv$filter_sel_col)
     if (length(remove) > 0) {
       remove_id <- gsub(" ", "_", tolower(remove))
       removeUI(paste0("#", remove_id))
@@ -133,24 +146,84 @@ server <- function(input, output, session) {
       # insertUI("#select_columns + .selectize-control", "afterEnd", "filter_moduleUI(insert, dt(), insert, insert)")
       insert_id <- gsub(" ", "_", tolower(insert))
       ch_lg <- c("In", "Not in")
-      ch_kp <- c("Keep NA's", "Keep empty cells")
-      insertUI("#select_columns_div",
+      ch_kp <- c("Keep NAs", "Keep empty cells")
+      insertUI("#filter_select_columns_div",
                "afterEnd", 
                ui = filter_moduleUI(insert_id, dt(), insert, insert, ch_lg, ch_kp))
+               # ui = filter_moduleUI(insert_id, rv$dt, insert, insert, ch_lg, ch_kp))
     }
-    rv$sel_col <- input$select_columns
+    rv$filter_sel_col <- input$filter_select_columns
   }, ignoreNULL = FALSE)
   
+  
+  # arrange module server
+  observeEvent(input$arrange_select_columns, {
+    sel_col <- input$arrange_select_columns
+    remove <- setdiff(rv$arrange_sel_col, sel_col)
+    insert <- setdiff(sel_col, rv$arrange_sel_col)
+    if (length(remove) > 0) {
+      remove_id <- gsub(" ", "_", tolower(remove))
+      removeUI(paste0("#", remove_id))
+    } else if (length(insert) > 0) {
+      insert_id <- gsub(" ", "_", tolower(insert))
+      ch_arr <- c("descendingly", "ascendingly")
+      insertUI("#arrange_select_columns_div",
+               "afterEnd", 
+               ui = arrange_moduleUI(insert_id, dt(), insert, ch_arr))
+    }
+    rv$arrange_sel_col <- input$arrange_select_columns
+  }, ignoreNULL = FALSE)
+  
+  
+  
+  
   dt_after <- reactive({
-    # req(dt(), rv$sel_col)
+  # observe({
     dt <- dt()
-    map(rv$sel_col, function(d) {
+    # filter
+    map(rv$filter_sel_col, function(d) {
       d0 <- gsub(" ", "_", tolower(d))
       dt <<- filter_moduleServer(d0, dt, d)
     })
+    
+    
+  #   rv$dt_after <- dt
+  # })
+  # 
+  # observe({
+    req(input$logical_columns_select, input$logical_contains_select)
+    # dt <- rv$dt
+    
+    # select
+    sel <- sel_n <- NULL
+    if (input$logical_columns_select == "in") sel <- input$select_select_columns
+    if (input$logical_columns_select == "not_in") sel_n <- input$select_select_columns
+    if (input$logical_contains_select == "in") sel <- c(sel, input$contains_select_columns)
+    if (input$logical_contains_select == "not_in") sel_n <- c(sel_n, input$contains_select_columns)
+    sel <- sel[nzchar(sel)]
+    sel_n <- sel_n[nzchar(sel_n)]
+    if (sum(nchar(sel)) > 0 & sum(nchar(sel_n)) > 0) dt <- dt %>% dplyr::select(contains(sel), !contains(sel_n))
+    if (sum(nchar(sel)) == 0 & sum(nchar(sel_n)) > 0) dt <- dt %>% dplyr::select(!contains(sel_n))
+    if (sum(nchar(sel)) > 0 & sum(nchar(sel_n)) == 0) dt <- dt %>% dplyr::select(contains(sel))
+    
+    # rv$dt_after <- dt
+    
+    
+    # arrange
+    arr <- map(rv$arrange_sel_col, function(d) {
+      d0 <- gsub(" ", "_", tolower(d))
+      arrange_moduleServer(d0, dt, d)
+    })
+    if (length(arr) > 0) {
+      assign("d2", dt, envir = globalenv())
+      assign("d3", paste0(arr, collapse = ", "), envir = globalenv())
+      # dt <- dt %>% arrange(eval(parse(text = paste0(arr, collapse = ", "))))
+      dt <- eval(parse(text = paste0("arrange(dt, ", paste0(arr, collapse = ", "), ")")))
+    }
+    
     dt
   })
-    
+  
   
   
   
@@ -206,9 +279,9 @@ server <- function(input, output, session) {
   
   # descargas
   observe({
-    downloadDsServer("download_data_button", element = reactive(dt()), formats = "html",
+    downloadDsServer("download_data_button", element = reactive(dt_after()), formats = "html",
                      errorMessage = i_("gl_error", lang()),
-                     modalFunction = pin_, reactive(dt()),
+                     modalFunction = pin_, reactive(dt_after()),
                      bkt = url_par()$inputs$user_name)
   })
   

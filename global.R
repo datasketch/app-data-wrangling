@@ -1,3 +1,4 @@
+# filter
 filter_moduleUI <- function(id, data, col, text, logical_names = NULL, na_empty_names = NULL) {
   
   ns <- NS(id)
@@ -7,7 +8,6 @@ filter_moduleUI <- function(id, data, col, text, logical_names = NULL, na_empty_
     if (hd == "Dat") {
       vctr <- as.Date(vctr, "%Y-%m-%d")
     }
-    assign("c0", vctr, envir = globalenv())
     input <- sliderInput(ns("num_filter"),
                          "",
                          min = min(vctr, na.rm = TRUE),
@@ -15,7 +15,7 @@ filter_moduleUI <- function(id, data, col, text, logical_names = NULL, na_empty_
                          value = c(min(vctr, na.rm = TRUE), max(vctr, na.rm = TRUE)),
                          timeFormat = "%Y-%m-%d")
   } else {
-    input <- selectizeInput(ns("cat_filter"), "", unique(c("", na.omit(vctr))), multiple = TRUE)
+    input <- selectizeInput(ns("cat_filter"), "", unique(c("", na.omit(vctr))), multiple = TRUE, options = list("plugins" = list("remove_button")))
   }
   
   choices_kp <- c()
@@ -46,8 +46,6 @@ filter_moduleServer <- function(id, data, col) {
     dt <- data
     hd <- guess_hdType(data[[col]])
     
-    # fl_expr <- ""
-    print(input$car_filter)
     if (hd %in% c("Num", "Yea", "Dat")) {
       fl_expr <- "input$num_filter[1] <= .data[[col]] & input$num_filter[2] >= .data[[col]]"
       if (input$logical_relation == "not_in") fl_expr <- paste0("!(", fl_expr, ")")
@@ -70,35 +68,31 @@ filter_moduleServer <- function(id, data, col) {
 }
 
 
+arrange_moduleUI <- function(id, data, col, arrange_names = NULL) {
+  
+  ns <- NS(id)
+  
+  choices_arr <- c("descendent", "ascendent")
+  if (!is.null(arrange_names) & length(arrange_names) == length(choices_arr)) names(choices_arr) <- arrange_names
+  div(id = id, 
+      div(style = "display: flex; justify-content: space-between;",
+          div(style = "font-weight: 600; padding: 0 29px 0 0;", paste0(col, ":")),
+          radioButtons(ns("arrange_order"), "", choices = choices_arr)))
+  
+}
 
 
-# filter_moduleServer <- function(id, data, col) {
-#   
-#   moduleServer(id, function(input, output, session) {
-#     req(input$logical_relation)
-#     dt <- data
-#     hd <- guess_hdType(data[[col]])
-#     if (hd %in% c("Num", "Yea", "Dat")) {
-#       if (input$logical_relation == "in") {
-#         dt <- dt %>%
-#           dplyr::filter(input$num_filter[1] <= .data[[col]],
-#                         input$num_filter[2] >= .data[[col]])
-#       } else {
-#         dt <- dt %>%
-#           dplyr::filter(input$num_filter[1] > .data[[col]] | input$num_filter[2] < .data[[col]])
-#       }
-#     } else {
-#       if (!is.null(input$cat_filter)) {
-#         if (input$logical_relation == "in") {
-#           dt <- dt %>%
-#             dplyr::filter(.data[[col]] %in% input$cat_filter)
-#         } else {
-#           dt <- dt %>%
-#             dplyr::filter(!.data[[col]] %in% input$cat_filter)
-#         }
-#       }
-#     }
-#     dt
-#   })
-#   
-# }
+arrange_moduleServer <- function(id, data, col) {
+  
+  moduleServer(id, function(input, output, session) {
+    req(input$arrange_order)
+    dt <- data
+    
+    if (input$arrange_order == "descendent") {
+      paste0("desc(.data[['", col, "']])") 
+    } else {
+      paste0(".data[['", col, "']]")
+    }  
+  })
+  
+}
