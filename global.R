@@ -96,3 +96,57 @@ arrange_moduleServer <- function(id, data, col) {
   })
   
 }
+
+
+
+# pivot_longer
+pivot_longer_moduleUI <- function(id, data) {
+  
+  ns <- NS(id)
+  vctr <- names(data)
+  input <- 
+    
+    div(id = id,
+        style = "margin-top: 37px;",
+        selectizeInput(ns("columns_pv_lng"), "Columns with same measure:", c("", vctr), multiple = TRUE, options = list("plugins" = list("remove_button"))),
+        textInput(ns("names_col"), "Column of names:", placeholder = "Name new column of names"),
+        textInput(ns("values_col"), "Column of values:", placeholder = "Name new column of values"))
+  
+}
+
+
+pivot_longer_moduleServer <- function(id, data) {
+  
+  moduleServer(id, function(input, output, session) {
+    dt <- data
+    nm <- as.numeric(regmatches(id, regexec("[0-9]+", id)))
+    # lt <- list(nm = nm, dt = dt)
+    print(nm)
+    print(input$columns_pv_lng)
+    if (all(map_lgl(c(input$columns_pv_lng, input$names_col, input$values_col), ~isTruthy(.x)))) {
+      dt <- tryCatch(pivot_longer(data,
+                                  cols = input$columns_pv_lng, 
+                                  names_to = input$names_col,
+                                  values_to = input$values_col),
+                     error = function(e) "The chosen columns have different type of data, thus, cannot be combined into one single column.")
+      insertUI(paste0("#", id),
+               "afterEnd",
+               ui = pivot_longer_moduleUI(paste0("pivot_longer_", nm + 1), dt),
+               multiple = FALSE)
+      # lt$dt <- dt
+      # lt$nm <- nm + 1
+    } else {
+      # lt$dt <- "NULL"
+      # lt$dt <- NULL
+      print("FFFFFF")
+      removeUI(paste0("#pivot_longer_", nm + 1))
+    }
+    dt
+    # lt
+  })
+  
+}
+
+
+
+

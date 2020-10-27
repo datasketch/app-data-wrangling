@@ -32,6 +32,7 @@ ui <- panelsPage(useShi18ny(),
                        color = "chardonnay",
                        can_collapse = FALSE,
                        body = div(langSelectorInput("lang", position = "fixed"),
+                                  uiOutput("result_wrng"),
                                   withLoader(uiOutput("result"), type = "image", loader = "loading_gris.gif"))))
 
 
@@ -113,6 +114,7 @@ server <- function(input, output, session) {
   
   
   rv <- reactiveValues(dt = NULL, dt_after = NULL,
+                       result_wrng = NULL,
                        filter_sel_col = NULL, arrange_sel_col = NULL)
   
   output$controls <- renderUI({
@@ -122,7 +124,7 @@ server <- function(input, output, session) {
           selectizeInput("filter_select_columns", "Columns", choices = c("", names(dt())), multiple = TRUE, options = list("plugins" = list("remove_button")))),
       div(id = "select_select_columns_div",
           div(class = "style_section", "Select columns"),
-          radioButtons("logical_columns_select", "Columns", choices = c("In" = "in", "Not in" = "not_in")),
+          radioButtons("logical_columns_select", "Columns", choices = c("in" = "in", "not in" = "not_in")),
           selectizeInput("select_select_columns", "", choices = c("", names(dt())), multiple = TRUE, options = list("plugins" = list("remove_button"))),
           # div(#style = "display: flex; justify-content: space-between;",
           # div(style = "font-weight: 600; padding: 0 29px 0 0;", "Columns that:"),
@@ -131,10 +133,26 @@ server <- function(input, output, session) {
       div(id = "arrange_select_columns_div",
           div(class = "style_section", "Arrange"),
           selectizeInput("arrange_select_columns", "Columns", choices = c("", names(dt())), multiple = TRUE, options = list("plugins" = list("remove_button")))),
+      div(id = "pivot_longer_div",
+          div(class = "style_section", "Wide to long"),
+          # infomessage('If datasets have columns that "measure" the same thing, contain the same "type" of data, 
+          # they can be converted into another one -a "tidy" one- (without loosing any information) that is going to follow the next rules:
+          # + not any two columns measure the same thing
+          # + each row is an event observation
+          # For this, it will be needed to specify, first of all, the names of the columns that "measure" the same thing.
+          # Once the columns have been specified, two new columns can be formed: one with the names of the columns, other with 
+          # the values of the columns (in the correspondent order off course). Lastly, this two new columns have to be named.', type = "info"))
+          # infomessage('If datasets have columns that "measure" the same thing, contain the same "type" of data, it can be thought
+          #             that all this data can be stored in only two columns: one with the names of the columns (that indicates what is the data of the column about)
+          #             and other with the actual values of the columns', type = "info"),
+          infomessage('Datasets that have columns that "measure" the same thing, contain the same "type" of data can have all this data stored in only two columns:
+                      one with the names of the columns (that indicates what is the data measuring)
+                      and other with the actual measures, values of the columns', type = "info"),
+          pivot_longer_moduleUI("pivot_longer_0", dt()))
     )
   })
   
-  # filter module server
+  # filter module ui
   observeEvent(input$filter_select_columns, {
     sel_col <- input$filter_select_columns
     remove <- setdiff(rv$filter_sel_col, sel_col)
@@ -145,7 +163,7 @@ server <- function(input, output, session) {
     } else if (length(insert) > 0) {
       # insertUI("#select_columns + .selectize-control", "afterEnd", "filter_moduleUI(insert, dt(), insert, insert)")
       insert_id <- gsub(" ", "_", tolower(insert))
-      ch_lg <- c("In", "Not in")
+      ch_lg <- c("in", "not in")
       ch_kp <- c("Keep NAs", "Keep empty cells")
       insertUI("#filter_select_columns_div",
                "afterEnd", 
@@ -156,7 +174,7 @@ server <- function(input, output, session) {
   }, ignoreNULL = FALSE)
   
   
-  # arrange module server
+  # arrange module ui
   observeEvent(input$arrange_select_columns, {
     sel_col <- input$arrange_select_columns
     remove <- setdiff(rv$arrange_sel_col, sel_col)
@@ -176,10 +194,11 @@ server <- function(input, output, session) {
   
   
   
-  
-  dt_after <- reactive({
+  dt_after <- reactive({#dt()})
   # observe({
     dt <- dt()
+    
+    
     # filter
     map(rv$filter_sel_col, function(d) {
       d0 <- gsub(" ", "_", tolower(d))
@@ -187,14 +206,9 @@ server <- function(input, output, session) {
     })
     
     
-  #   rv$dt_after <- dt
-  # })
-  # 
-  # observe({
-    req(input$logical_columns_select, input$logical_contains_select)
-    # dt <- rv$dt
     
     # select
+    req(input$logical_columns_select, input$logical_contains_select)
     sel <- sel_n <- NULL
     if (input$logical_columns_select == "in") sel <- input$select_select_columns
     if (input$logical_columns_select == "not_in") sel_n <- input$select_select_columns
@@ -206,7 +220,6 @@ server <- function(input, output, session) {
     if (sum(nchar(sel)) == 0 & sum(nchar(sel_n)) > 0) dt <- dt %>% dplyr::select(!contains(sel_n))
     if (sum(nchar(sel)) > 0 & sum(nchar(sel_n)) == 0) dt <- dt %>% dplyr::select(contains(sel))
     
-    # rv$dt_after <- dt
     
     
     # arrange
@@ -215,11 +228,36 @@ server <- function(input, output, session) {
       arrange_moduleServer(d0, dt, d)
     })
     if (length(arr) > 0) {
-      assign("d2", dt, envir = globalenv())
-      assign("d3", paste0(arr, collapse = ", "), envir = globalenv())
       # dt <- dt %>% arrange(eval(parse(text = paste0(arr, collapse = ", "))))
       dt <- eval(parse(text = paste0("arrange(dt, ", paste0(arr, collapse = ", "), ")")))
     }
+  
+    
+    assign("d2", dt, envir = globalenv())
+    
+    # pivot longer
+    # dt_ <- dt
+    dt <- pivot_longer_moduleServer("pivot_longer_0", dt)
+    # dt <- pivot_longer_moduleServer("pivot_longer_1", dt)
+    # dt <- pivot_longer_moduleServer("pivot_longer_2", dt)
+    # dt <- lt$dt
+    # nm <- 0
+    # while (dt_ != "NULL") {
+    #   print("DDDD")
+    #   print(nm)
+    #   dt_ <<- pivot_longer_moduleServer(paste0("pivot_longer_", nm), dt)$dt
+    #   nm <<- nm + 1
+    # }
+    
+    # dt_ <- pivot_longer_moduleServer("pivot_longer_0", dt)
+    # assign("d3", lt, envir = globalenv())
+    # if (class(dt_) %in% "character") {
+    #   rv$result_wrng <- infomessage(dt_)
+    # } else {
+    #   dt <- dt_
+    #   rv$result_wrng <- ""
+    # }
+    
     
     dt
   })
@@ -239,13 +277,19 @@ server <- function(input, output, session) {
                selectInput("license", i_("gl_license", lang()), choices = c("CC0", "CC-BY")),
                selectizeInput("tags", i_("gl_tags", lang()), choices = list("No tag" = "no-tag"), multiple = TRUE, options = list(plugins= list('remove_button', 'drag_drop'))),
                selectizeInput("category", i_("gl_category", lang()), choices = list("No category" = "no-category")))
-    downloadDsUI("download_data_button", dropdownLabel = lb, text = dw, formats = "html",
+    downloadDsUI("download_data_button", dropdownLabel = lb, text = dw, formats = c("csv", "xlsx", "json"),
                  display = "dropdown", dropdownWidth = 170, getLinkLabel = gl, modalTitle = gl, modalBody = mb,
                  modalButtonLabel = i_("gl_save", lang()), modalLinkLabel = i_("gl_url", lang()), modalIframeLabel = i_("gl_iframe", lang()),
-                 modalFormatChoices = c("HTML" = "html", "PNG" = "png"))
+                 modalFormatChoices = c("HTML" = "html", "CSV" = "csv", "JSON" = "json"))
   })
   
-  # renderizando reactable
+  # renderizando warnings resultado (si hay)
+  output$result_wrng <- renderUI({
+    # infomessage(rv$result_wrng, type = "warning")
+    rv$result_wrng
+  })
+  
+  # renderizando resultado
   output$result <- renderUI({
     suppressWarnings(hotr("hotr_input", data = dt_after(), order = NULL, options = list(height = "86vh"), enableCTypes = FALSE))
   })
@@ -279,7 +323,7 @@ server <- function(input, output, session) {
   
   # descargas
   observe({
-    downloadDsServer("download_data_button", element = reactive(dt_after()), formats = "html",
+    downloadDsServer("download_data_button", element = reactive(dt_after()), formats = c("csv", "xlsx", "json"),
                      errorMessage = i_("gl_error", lang()),
                      modalFunction = pin_, reactive(dt_after()),
                      bkt = url_par()$inputs$user_name)
