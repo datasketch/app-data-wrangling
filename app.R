@@ -34,12 +34,14 @@ ui <- panelsPage(useShi18ny(),
                        body = div(langSelectorInput("lang", position = "fixed"),
                                   uiOutput("result_wrng"),
                                   withLoader(uiOutput("result"), type = "image", loader = "loading_gris.gif"))))
+                                  # withLoader(dataTableOutput("result"), type = "image", loader = "loading_gris.gif"))))
 
 
 
 server <- function(input, output, session) {
   
   i18n <- list(defaultLang = "en", availableLangs = c("es", "en", "pt_BR"))
+  # i18n <- list(defaultLang = "en", availableLangs = "en")
   lang <- callModule(langSelector, "lang", i18n = i18n, showSelector = FALSE)
   observeEvent(lang(), {uiLangUpdate(input$shi18ny_ui_classes, lang())})  
   
@@ -119,38 +121,50 @@ server <- function(input, output, session) {
   
   output$controls <- renderUI({
     div(
-      div(id = "filter_select_columns_div",
-          div(class = "style_section", "Filter"),
-          selectizeInput("filter_select_columns", "Columns", choices = c("", names(dt())), multiple = TRUE, options = list("plugins" = list("remove_button")))),
       div(id = "select_select_columns_div",
           div(class = "style_section", "Select columns"),
           radioButtons("logical_columns_select", "Columns", choices = c("in" = "in", "not in" = "not_in")),
           selectizeInput("select_select_columns", "", choices = c("", names(dt())), multiple = TRUE, options = list("plugins" = list("remove_button"))),
-          # div(#style = "display: flex; justify-content: space-between;",
-          # div(style = "font-weight: 600; padding: 0 29px 0 0;", "Columns that:"),
           radioButtons("logical_contains_select", "Columns names that:", choices = c("contain" = "in", "do not contain" = "not_in")),
           textInput("contains_select_columns", "", placeholder = "Write text")),
+      div(id = "filter_select_columns_div",
+          div(class = "style_section", "Filter"),
+          selectizeInput("filter_select_columns", "Columns", choices = c("", names(dt())), multiple = TRUE, options = list("plugins" = list("remove_button")))),
       div(id = "arrange_select_columns_div",
           div(class = "style_section", "Arrange"),
           selectizeInput("arrange_select_columns", "Columns", choices = c("", names(dt())), multiple = TRUE, options = list("plugins" = list("remove_button")))),
       div(id = "pivot_longer_div",
           div(class = "style_section", "Wide to long"),
-          # infomessage('If datasets have columns that "measure" the same thing, contain the same "type" of data, 
-          # they can be converted into another one -a "tidy" one- (without loosing any information) that is going to follow the next rules:
-          # + not any two columns measure the same thing
-          # + each row is an event observation
-          # For this, it will be needed to specify, first of all, the names of the columns that "measure" the same thing.
-          # Once the columns have been specified, two new columns can be formed: one with the names of the columns, other with 
-          # the values of the columns (in the correspondent order off course). Lastly, this two new columns have to be named.', type = "info"))
-          # infomessage('If datasets have columns that "measure" the same thing, contain the same "type" of data, it can be thought
-          #             that all this data can be stored in only two columns: one with the names of the columns (that indicates what is the data of the column about)
-          #             and other with the actual values of the columns', type = "info"),
-          infomessage('Datasets that have columns that "measure" the same thing, contain the same "type" of data can have all this data stored in only two columns:
-                      one with the names of the columns (that indicates what is the data measuring)
-                      and other with the actual measures, values of the columns', type = "info"),
-          pivot_longer_moduleUI("pivot_longer_0", dt()))
+          infomessage('Datasets with columns that measure the same thing and contain the same type of data can have
+                      all this information stored in only two columns: one with the names of the columns
+                      (which indicates what the data is measuring) and another one with the actual values of what is being measured', type = "info"),
+          
+          pivot_longer_moduleUI("pivot_longer_0", dt())),
+      div(id = "pivot_wider_div",
+          div(class = "style_section", "Long to wide"),
+          infomessage("Wide to long inverse process", type = "info"),
+          pivot_wider_moduleUI("pivot_wider_0", dt()))
     )
   })
+  
+  # data with only selected columns
+  dt_sel_columns <- reactive({
+    req(input$logical_columns_select, input$logical_contains_select)
+    sel <- sel_n <- NULL
+    if (input$logical_columns_select == "in") sel <- input$select_select_columns
+    if (input$logical_columns_select == "not_in") sel_n <- input$select_select_columns
+    if (input$logical_contains_select == "in") sel <- c(sel, input$contains_select_columns)
+    if (input$logical_contains_select == "not_in") sel_n <- c(sel_n, input$contains_select_columns)
+    sel <- sel[nzchar(sel)]
+    sel_n <- sel_n[nzchar(sel_n)]
+    if (sum(nchar(sel)) > 0 & sum(nchar(sel_n)) > 0) dt <- dt %>% dplyr::select(contains(sel), !contains(sel_n))
+    if (sum(nchar(sel)) == 0 & sum(nchar(sel_n)) > 0) dt <- dt %>% dplyr::select(!contains(sel_n))
+    if (sum(nchar(sel)) > 0 & sum(nchar(sel_n)) == 0) dt <- dt %>% dplyr::select(contains(sel))
+  })
+  
+  # update filter, arrange, pivot long column choices
+  
+  
   
   # filter module ui
   observeEvent(input$filter_select_columns, {
@@ -207,7 +221,7 @@ server <- function(input, output, session) {
     
     
     
-    # select
+    # # select
     req(input$logical_columns_select, input$logical_contains_select)
     sel <- sel_n <- NULL
     if (input$logical_columns_select == "in") sel <- input$select_select_columns
@@ -219,7 +233,7 @@ server <- function(input, output, session) {
     if (sum(nchar(sel)) > 0 & sum(nchar(sel_n)) > 0) dt <- dt %>% dplyr::select(contains(sel), !contains(sel_n))
     if (sum(nchar(sel)) == 0 & sum(nchar(sel_n)) > 0) dt <- dt %>% dplyr::select(!contains(sel_n))
     if (sum(nchar(sel)) > 0 & sum(nchar(sel_n)) == 0) dt <- dt %>% dplyr::select(contains(sel))
-    
+
     
     
     # arrange
@@ -258,6 +272,10 @@ server <- function(input, output, session) {
     #   rv$result_wrng <- ""
     # }
     
+    
+    
+    # pivot wider
+    dt <- pivot_wider_moduleServer("pivot_wider_0", dt)
     
     dt
   })
@@ -300,7 +318,6 @@ server <- function(input, output, session) {
     url_params(par, session)
   })
   
-  # prepare element for pining (for htmlwidgets or ggplots)
   # función con user board connect y set locale
   pin_ <- function(x, bkt, ...) {
     x <- dsmodules:::eval_reactives(x)
@@ -309,23 +326,25 @@ server <- function(input, output, session) {
     if (!nzchar(input$`download_data_button-modal_form-name`)) {
       nm <- paste0("saved", "_", gsub("[ _:]", "-", substr(as.POSIXct(Sys.time()), 1, 19)))
       updateTextInput(session, "download_data_button-modal_form-name", value = nm)
-    }
-    dv <- dsviz(x,
-                name = nm,
-                description = input$`download_data_button-modal_form-description`,
-                license = input$`download_data_button-modal_form-license`,
-                tags = input$`download_data_button-modal_form-tags`,
-                category = input$`download_data_button-modal_form-category`)
+    } 
+    dv <- fringe(x)
+    dv$name <- nm
+    dv$slug <- nm
+    dv$description <- input$`download_data_button-modal_form-description`
+    dv$license <- input$`download_data_button-modal_form-license`
+    dv$tags <- input$`download_data_button-modal_form-tags`
+    dv$category <- input$`download_data_button-modal_form-category`
     dspins_user_board_connect(bkt)
     Sys.setlocale(locale = "en_US.UTF-8")
     pin(dv, bucket_id = bkt)
-  }
+  }  
+  
   
   # descargas
   observe({
     downloadDsServer("download_data_button", element = reactive(dt_after()), formats = c("csv", "xlsx", "json"),
                      errorMessage = i_("gl_error", lang()),
-                     modalFunction = pin_, reactive(dt_after()),
+                     modalFunction = pin_, x = reactive(dt_after()),
                      bkt = url_par()$inputs$user_name)
   })
   

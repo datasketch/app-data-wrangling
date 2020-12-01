@@ -104,13 +104,11 @@ pivot_longer_moduleUI <- function(id, data) {
   
   ns <- NS(id)
   vctr <- names(data)
-  input <- 
-    
-    div(id = id,
-        style = "margin-top: 37px;",
-        selectizeInput(ns("columns_pv_lng"), "Columns with same measure:", c("", vctr), multiple = TRUE, options = list("plugins" = list("remove_button"))),
-        textInput(ns("names_col"), "Column of names:", placeholder = "Name new column of names"),
-        textInput(ns("values_col"), "Column of values:", placeholder = "Name new column of values"))
+  div(id = id,
+      style = "margin-top: 37px;",
+      selectizeInput(ns("columns_pv_lng"), "Columns with same measure:", c("", vctr), multiple = TRUE, options = list("plugins" = list("remove_button"))),
+      textInput(ns("names_col"), "Column of names:", placeholder = "Name new column of names"),
+      textInput(ns("values_col"), "Column of values:", placeholder = "Name new column of values"))
   
 }
 
@@ -129,17 +127,19 @@ pivot_longer_moduleServer <- function(id, data) {
                                   names_to = input$names_col,
                                   values_to = input$values_col),
                      error = function(e) "The chosen columns have different type of data, thus, cannot be combined into one single column.")
-      insertUI(paste0("#", id),
-               "afterEnd",
-               ui = pivot_longer_moduleUI(paste0("pivot_longer_", nm + 1), dt),
-               multiple = FALSE)
+      # FALTA LOGRAR ESTO (apenas se complete un módulo de pivot longer que salga otro y si se ¿descompleta el primero?
+      # ¿se quita el siguiente? ¿así esté completo?)
+      # insertUI(paste0("#", id),
+      #          "afterEnd",
+      #          ui = pivot_longer_moduleUI(paste0("pivot_longer_", nm + 1), dt),
+      #          multiple = FALSE)
       # lt$dt <- dt
       # lt$nm <- nm + 1
     } else {
       # lt$dt <- "NULL"
       # lt$dt <- NULL
-      print("FFFFFF")
-      removeUI(paste0("#pivot_longer_", nm + 1))
+      # print("FFFFFF")
+      # removeUI(paste0("#pivot_longer_", nm + 1))
     }
     dt
     # lt
@@ -150,3 +150,44 @@ pivot_longer_moduleServer <- function(id, data) {
 
 
 
+
+# pivot_wider
+pivot_wider_moduleUI <- function(id, data) {
+  
+  ns <- NS(id)
+  vctr <- names(data)
+  div(id = id,
+      style = "margin-top: 37px;",
+      selectInput(ns("names_from"), "Names from column:", c("", vctr)),
+      selectInput(ns("values_from"), "Values from column:", c("", vctr)))
+  
+}
+
+
+pivot_wider_moduleServer <- function(id, data) {
+  
+  moduleServer(id, function(input, output, session) {
+    dt <- data
+    nm <- as.numeric(regmatches(id, regexec("[0-9]+", id)))
+    if (all(map_lgl(c(input$names_from, input$values_from), ~isTruthy(.x)))) {
+      dt <- tryCatch(pivot_wider(dt,
+                                 names_from = input$names_from,
+                                 values_from = input$values_from),
+                                 #values_fn = sum),
+                     error = function(e) "T")
+      # insertUI(paste0("#", id),
+      #          "afterEnd",
+      #          ui = pivot_longer_moduleUI(paste0("pivot_longer_", nm + 1), dt),
+      #          multiple = FALSE)
+      # lt$dt <- dt
+      # lt$nm <- nm + 1
+    } else {
+      # lt$dt <- "NULL"
+      # lt$dt <- NULL
+      # removeUI(paste0("#pivot_longer_", nm + 1))
+    }
+    dt
+    # lt
+  })
+  
+}
