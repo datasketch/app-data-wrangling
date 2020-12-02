@@ -74,39 +74,40 @@ filter_moduleServer <- function (id, data, options_0 = NULL, options_1 = NULL) {
           vc <- as.Date(vc, "%Y-%m-%d")
         }
         in0 <- sliderInput(ns(paste0(nm, "-", "filter_1")),
-                             "",
-                             min = min(vctr, na.rm = TRUE),
-                             max = max(vctr, na.rm = TRUE),
-                             value = c(min(vctr, na.rm = TRUE), max(vctr, na.rm = TRUE)),
-                             timeFormat = "%Y-%m-%d")
+                           "",
+                           min = min(vc, na.rm = TRUE),
+                           max = max(vc, na.rm = TRUE),
+                           value = c(min(vc, na.rm = TRUE), max(vc, na.rm = TRUE)),
+                           timeFormat = "%Y-%m-%d")
       } else {
         in0 <- selectizeInput(ns(paste0(nm, "-", "filter_2")),
-                                "",
-                                unique(c("", na.omit(vc))), 
-                                multiple = TRUE,
-                                options = list("plugins" = list("remove_button")))
+                              "",
+                              unique(vc), 
+                              # unique(c("", na.omit(vc))), 
+                              multiple = TRUE,
+                              options = list("plugins" = list("remove_button")))
       }
-      # choices_kp <- c()
-      # checkbox_na_empty <- "" 
-      # if (any(is.na(vctr))) choices_kp <- c("keep_na")
-      # if (any(!nzchar(vctr))) choices_kp <- c(choices_kp, "keep_empty")
-      # if (!is.null(na_empty_names) & (length(na_empty_names) >= length(choices_kp)) & (length(choices_kp) > 0)) names(choices_kp) <- na_empty_names[seq_along(choices_kp)]
-      # if (length(choices_kp) > 0) checkbox_na_empty <- checkboxGroupInput(ns("keep_na_empty"), "", choices = choices_kp, selected = choices_kp)
-      div(#id = id, 
-          div(style = "display: flex; justify-content: space-between;",
-              div(style = "font-weight: 600; padding: 0 39px 0 0;", paste0(nm, ":")),
-              # div(style = "font-size: 17px; font-weight: 400; padding: 0 17px 14px 0;", paste0(col, ":")),
-              # div(style = "padding: 0 17px 14px 0;", class = "control-label", paste0(col, ":")),
-              radioButtons(ns(paste0(nm, "-", "filter_3")), "", choices = opt_0)),
-          input#,
-          # checkbox_na_empty
-          )
-      
-      
+      if (any(is.na(vc)) & any(!nzchar(vc))) {
+        opt_1 <- opt_1
+      } else if (any(is.na(vc))) {
+        opt_1 <- opt_1[1]
+      } else if (any(!nzchar(vc))) {
+        opt_1 <- opt_1[2] 
+      } else {
+        opt_1 <- NULL
+      }
+      in1 <- ""
+      if (!is.null(opt_1)) in1 <- checkboxGroupInput(ns(paste0(nm, "-", "filter_3")), "", choices = opt_1, selected = opt_1)
+      dv <- tagList(div(style = "display: flex; justify-content: space-between;",
+                        div(style = "font-weight: 600; padding: 0 39px 0 0;", paste0(nm, ":")),
+                        # div(style = "font-size: 17px; font-weight: 400; padding: 0 17px 14px 0;", paste0(col, ":")),
+                        # div(style = "padding: 0 17px 14px 0;", class = "control-label", paste0(col, ":")),
+                        radioButtons(ns(paste0(nm, "-", "filter_4")), "", choices = opt_0)),
+                    in0,
+                    in1)
+      insertUI("#filter_", "afterEnd", dv) 
     })
-    
+    d0
   })
   
 }
-
-
